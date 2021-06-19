@@ -1,0 +1,90 @@
+YAML file(Yet Another markup Language):
+----------------------------------
+-> This will use instead of = use :
+-> we can use one name another properites is sharing the same name 
+  ex:  app.name=My App
+       app.description=Welcome to srpingboot
+       
+       we can write in yaml file like below
+       
+  ->   app:
+           name=My App
+           description=Welcome to srpingboot
+           
+     Note : use spaces to maintain this don't use tab's 
+
+Microservice Spring profiles:
+------------------
+->syntax : application-<profileName>.extn
+   ->we created one yml file name as application-test.yml
+   ->add like this spring.profiles.active:test
+   
+   
+  So we need to switch to other dev or qa or sit or prod environment we just need to run one command line arg
+  ex: >java -jar spring-boot-config-0.0.1-SNAPSHOT.jar --spring.profiles.active=test / qa / sit / prod.
+
+->for beans also we can use @profile("default") this is default if we want dev then we can write @profile("dev")
+
+Spring cloud Bus:
+------------
+
+Ex : if add in git min value 22 then commit the changes to git and check the url it won't effect in both
+instances
+
+Then we need to do post reuest for 8080 and 8081
+
+ex: 
+1) http://localhost:8081/actuator/refresh
+
+response: [
+    "config.client.version",
+    "limits-config.minimum"
+]
+
+2)http://localhost:8080/actuator/refresh
+
+response: [
+    "config.client.version",
+    "limits-config.minimum"
+]
+
+
+Problem : Here we need to do post refresh(http://localhost:8080/actuator/refresh) the request for all 
+instances suppose if we have 100 isntances need to do 
+all 100 isntances
+
+
+Implementing the spring cloud bus to resolve this problem:
+--------------------------------------------------
+So we can use Rabbit MQ to amqp dependency
+
+		<dependency>
+			<groupId>org.springframework.cloud</groupId>
+			<artifactId>spring-cloud-starter-bus-amqp</artifactId>
+		</dependency>
+
+Run the Post request once of one instance the remaining instance also refresh ex:
+http://localhost:8080/actuator/refresh
+
+
+Fault Tolerance acheive using Hystrix:
+------------------------------
+If suppose microservice is depend on another microservice then that case if any other service also fail.
+
+Ex: Currency conversion service -> depend on Currency exchange service then if suppose this -> depend Limits service
+
+if currency exchange service is down or any exception will return conversion service won't work as expected.
+
+so for this case we use Hystrix to acheive this.
+
+1) Add the depedency 
+<dependency>
+			<groupId>org.springframework.cloud</groupId>
+			<artifactId>spring-cloud-starter-hystrix</artifactId>
+			 <version>1.4.7.RELEASE</version>
+		</dependency>
+
+2)@EnableHystrix enable to applications in application classs
+
+3)Add this anotation to which code or method to execute
+@HystrixCommand(fallbackMethod = "fallbackRetrieveConfiguration")
