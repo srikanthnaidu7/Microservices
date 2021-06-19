@@ -1,0 +1,105 @@
+Challenges in Microservices:
+----------------------------
+1)Bounded context -> what is correct for our microservices and Domain driven or boundaries for our MS
+
+2)configuration management : multiple env and instances
+	M1 ->Inst1,Inst2,Inst3 
+	M2 ->Inst1,Inst2
+	100 of configuration and instances
+	Need more deployment tasks (operation team need to management)
+	Spring cloud config server used to maintain the configuraiton to maintain in git repositories.
+3)Dynamically scale up and scale down.(Logging, security, analytics and dynamically up the service and down and 
+use all services and load balance )
+->Naming server(Eureka) : to provide different services
+->Ribbon Load Balancing 
+->Feign as a mechanism to write simple Restfull webservices.
+
+4)Visibity -> Monitoring (using the Zipkin to check logs using Ribbon MQ)
+-> zipkin Distributed Tracing
+->netflix Zuul API Gateway
+
+5)Pack of cards -> we need to use falut tolerance.(using the Hystrix)
+
+
+Advantages of MicroServ:
+-----------------------
+1)New Technology and process adoptations.
+2)Dynamic Scalling
+3)Faster Release Cycles
+
+
+Feign client:
+-------------
+To write unneccessary code to call other sevice we can use feign
+
+To use Fiegn we need to add below steps
+1) Dependency for Fiegn
+<dependency>
+			<groupId>org.springframework.cloud</groupId>
+			<artifactId>spring-cloud-starter-openfeign</artifactId>
+		</dependency>
+2)EnableFiegn for the application use @enableFeign("") -> provide the package which class to use 
+ex : @EnableFeignClients("com.cts.microservices.currencyconversionservice")
+3)Create the "proxy Interface" and add Anotation @FiegnClient(name="", url="") -> provide other service name and url of that other
+service.
+4) Add method like below example
+@GetMapping("/currency-exchange/from/{from}/to/{to}")
+	public CurrencyConversion retrieveExchangeValue(@PathVariable String from, @PathVariable String to);
+	
+	
+Ribbon:
+-----------
+To connect multiple instances for load balancing we used to create the ribbon
+Load Balancer
+
+1) To use this add dependency:
+<dependency>
+			<groupId>org.springframework.cloud</groupId>
+			<artifactId>spring-cloud-starter-netflix-ribbon</artifactId>
+		</dependency>
+		
+2)Add proxy interface below anotation ex: @RibbonClient(name = "currency-exchange-service")
+3)Add property as like below: "which service to connect "<applicaton name>.ribbon.listOfServers""
+ex : currency-exchange-service.ribbon.listOfServers=http://localhost:8000,http://localhost:8001
+
+
+Eureka Client:
+------------
+To add this servcie the currency conversion service to eureka naming server need to follow below steps
+1) Add dependency for eureka client depency in pom.xml
+2)Enable the eureka in the application by adding the anotation @EnableDiscoveryClient()
+3)Add Eureka server port number in to the property file as 
+  ex : eureka.client.service-url.default-zone=http://localhost:8761/eureka
+  
+ API gateway to run all services through api gate way:
+ ----------------------------------------------
+ 1)Created project to add slueth for all services to to pass all zuul api gate way
+ <dependency>
+			<groupId>org.springframework.cloud</groupId>
+			<artifactId>spring-cloud-starter-sleuth</artifactId>
+		</dependency>
+		
+server.port=8765
+ 
+ Zipkin server:
+ --------
+ 1) to run zipkin server we need rabbit MQ for that first need to install erlang and then install rabbit MQ.
+ 2)run the zipkin in cmd console by using 
+ SET RABBIT_URI=amqp://localhost 
+java -jar zipkin-server-2.23.2-exec.jar
+
+3) Add dependencies of zipkin zull and rabbit mq
+
+<dependency>
+			<groupId>org.springframework.cloud</groupId>
+			<artifactId>spring-cloud-sleuth-zipkin</artifactId>
+		</dependency>
+ 
+		<dependency>
+			<groupId>org.springframework.cloud</groupId>
+			<artifactId>spring-cloud-starter-bus-amqp</artifactId>
+		</dependency>
+		
+4)http://localhost:9411/zipkin
+
+Trace all logs in one place using the zipkin UI Console using the  rabbit MQ 
